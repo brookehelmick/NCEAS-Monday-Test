@@ -1,0 +1,68 @@
+---
+title: "R Practice: Tidy Data and Joins"
+author: "Brooke Helmick"
+format: html
+editor: visual
+---
+
+# read in data using download links
+
+bird_observations \<- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=knb-lter-cap.256.10&entityid=53edaa7a0e083013d9bf20322db1780e") surveys \<- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=knb-lter-cap.256.10&entityid=b2466fa5cb5ed7ee1ea91398fc291c59") sites \<- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=knb-lter-cap.256.10&entityid=81bf72420e69077097fb0790dcdc63a6") taxalist \<- read_csv("https://portal.edirepository.org/nis/dataviewer?packageid=knb-lter-cap.256.10&entityid=58f863b7e3066e68536a9cacdc7bd58e")
+
+dim(sites)
+
+dim(taxalist)
+
+glimpse(taxalist)
+
+glimpse(bird_observations)
+
+glimpse(surveys)
+
+glimpse(sites)
+
+
+bird_subset <- bird_observations %>% 
+  filter(species_id %in% c("BHCO", "RWBL")) %>% 
+  filter(site_id %in% c("LI-W", "NU-C"))
+
+birds_left <- left_join(x = bird_subset, y = sites, by = "site_id")
+
+birds_full <- full_join(x = bird_subset, y = sites, by = "site_id")
+
+Inner join - matches by key but excludes any NAs
+
+bird_tax <- inner_join (x = bird_subset, y= taxalist, by = "species_id")
+
+test for left join: 
+
+bird_tax_left <- bird_subset %>%
+  left_join(y = taxalist, by = "species_id")
+
+bird_observations <- bird_observations %>% 
+  rename(bird_obs_notes = notes)
+  
+bird_obs_subset <- bird_observations %>% 
+  full_join(y = taxalist, by = "species_id") %>% 
+  full_join(y = sites, by = "site_id") %>% 
+  full_join(y = surveys, by = c("site_id", "survey_id")) %>%  
+  select(survey_date, common_name, park_name, bird_count, observer)
+
+unique(bird_obs_subset$observer)
+
+i <- which(is.Josh(bird_obs_subset$observer))
+i
+
+
+bird_obs_subset <- bird_obs_subset %>%
+    mutate(Josh Burns = if_else(condition = Josh Burns == "I", 
+                             true = "J. Burns", 
+                             false = Josh Burns))
+
+bird_obs_subset <- bird_obs_subset %>%
+    mutate(observer = if_else(condition = observer == "Josh Burns", 
+                             true = "J. Burns", 
+                             false = observer))
+
+##check
+catch_clean[i, ]
